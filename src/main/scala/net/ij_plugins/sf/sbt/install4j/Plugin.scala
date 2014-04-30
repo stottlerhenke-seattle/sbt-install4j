@@ -40,6 +40,9 @@ object Plugin extends sbt.Plugin {
 
     lazy val install4jHomeDir = SettingKey[File]("install4jHomeDir",
       "Install4J installation directory. It assumes that Install4J compiler is in subdirectory `bin/install4jc.exe`.")
+      
+    lazy val install4jCompilerRelPath = SettingKey[String]("install4jCompiler",
+      "Install4j compiler executable (relative to install4jHomeDir)")
 
     lazy val install4jProjectFile = SettingKey[String]("install4jProjectFile",
       "The install4j project file that should be build.")
@@ -67,7 +70,7 @@ object Plugin extends sbt.Plugin {
       val _v2 = install4jCopyDependedJars.value
       assert(_v2 != null)
 
-      val install4jCompiler = new File(install4jHomeDir.value, "bin/install4jc.exe").getCanonicalFile
+      val install4jCompiler = new File(install4jHomeDir.value, install4jCompilerRelPath.value).getCanonicalFile
       val install4jProject = new File(baseDirectory.value, install4jProjectFile.value).getCanonicalFile
       runInstall4J(
         install4jCompiler,
@@ -97,6 +100,8 @@ object Plugin extends sbt.Plugin {
     install4jCopyDependedJarsEnabled := true,
 
     install4jHomeDir := file("C:/Program Files/install4j5"),
+    
+    install4jCompilerRelPath := "bin/install4j.exe",
 
     install4jProjectFile := "installer/installer.install4j",
 
