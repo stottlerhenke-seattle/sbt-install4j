@@ -154,24 +154,23 @@ object Plugin extends sbt.Plugin {
       throw new IOException("install4j project file not found: " + project.getAbsolutePath)
     }
 
-    var commandLine = "\"" + compiler.getPath + "\""
+    var commandLine = Seq(compiler.getAbsolutePath)
 
     // Verbose
-    if (verbose) commandLine += " --verbose "
+    if (verbose) commandLine :+= "--verbose"
 
     // Release
-    if (release.trim.nonEmpty) commandLine += " --release=" + release.trim
+    if (release.trim.nonEmpty) commandLine :+= "--release=" + release.trim
 
     // Compiler variables
     if (compilerVariables.nonEmpty) {
-      commandLine += " -D \"" +
-        compilerVariables.map {
+      commandLine ++= ("-D" +:
+        (compilerVariables.toSeq map {
           case (k, v) => k.trim + "=" + v.trim
-        }.mkString(",") +
-        "\""
+        }))
     }
 
-    commandLine += "\"" + project.getPath + "\""
+    commandLine :+= project.getPath
 
     logger.debug(prefix + "executing command: " + commandLine)
     val output = Process(commandLine).lines
