@@ -26,7 +26,7 @@ object Plugin extends sbt.Plugin {
   import Install4JKeys._
 
   object Install4JKeys {
-    lazy val install4j = TaskKey[Unit]("install4j",
+    lazy val install4j = InputKey[Unit]("install4j",
       "Builds Install4J project.")
 
     lazy val install4jCopyDependedJars = TaskKey[File]("install4jCopyDependedJars",
@@ -56,7 +56,10 @@ object Plugin extends sbt.Plugin {
     lazy val install4jRelease = SettingKey[String]("install4jRelease",
       "Override the application version. " +
         "Version number components can be alphanumeric and should be separated by dots, dashes or underscores. ")
-
+        
+	lazy val install4jCompilerArgs = SettingKey[Seq[String]]("install4jCompilerArgs",
+	  "Additional command line arguments for the install4j compiler")
+	  
     lazy val install4jCompilerVariables = SettingKey[Map[String, String]]("install4jCompilerVariables",
       "Override a compiler variable with a different value. " +
         "In the map, the `key` is variable's name, the `value` is variable's value.")
@@ -72,12 +75,14 @@ object Plugin extends sbt.Plugin {
 
       val install4jCompiler = new File(install4jHomeDir.value, install4jCompilerRelPath.value).getCanonicalFile
       val install4jProject = new File(baseDirectory.value, install4jProjectFile.value).getCanonicalFile
+      val args: Seq[String] = complete.DefaultParsers.spaceDelimited("<arg>").parsed
       runInstall4J(
         install4jCompiler,
         install4jProject,
         verbose = install4jVerbose.value,
         release = install4jRelease.value,
         compilerVariables = install4jCompilerVariables.value,
+        compilerArgs = install4jCompilerArgs.value ++ args,
         streams.value)
     },
 
@@ -109,7 +114,9 @@ object Plugin extends sbt.Plugin {
 
     install4jRelease := "",
 
-    install4jCompilerVariables := Map.empty
+    install4jCompilerVariables := Map.empty,
+    
+    install4jCompilerArgs := Nil
   )
 
   private def prefix = "[sbt-install4j] "
@@ -143,6 +150,7 @@ object Plugin extends sbt.Plugin {
                            verbose: Boolean,
                            release: String,
                            compilerVariables: Map[String, String],
+                           compilerArgs: Seq[String],
                            taskStreams: TaskStreams) {
     val logger = taskStreams.log
 
@@ -164,11 +172,13 @@ object Plugin extends sbt.Plugin {
 
     // Compiler variables
     if (compilerVariables.nonEmpty) {
-      commandLine ++= ("-D" +:
-        (compilerVariables.toSeq map {
+      commandLine ++= Seq("-D",
+        (compilerVariables map {
           case (k, v) => k.trim + "=" + v.trim
-        }))
+        }) mkString ",")
     }
+    
+    commandLine ++= compilerArgs
 
     commandLine :+= project.getPath
 
