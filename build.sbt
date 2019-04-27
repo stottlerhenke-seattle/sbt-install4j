@@ -1,13 +1,19 @@
 // @formatter:off
 
 name                 := "sbt-install4j"
+
 organization         := "com.github.jpsacha"
+
 version              := "1.1.0"
 
 homepage             := Some(url("http://github.com/jpsacha/sbt-install4j"))
+
 organizationHomepage := Some(url("http://ij-plugins.sf.net"))
+
 startYear            := Some(2014)
+
 licenses             := Seq("GPLv3" -> url("http://www.gnu.org/licenses/gpl.html"))
+
 description          := "SBT plugin for building installers with Install4J."
 
 scalaVersion := "2.10.6"
@@ -17,7 +23,9 @@ sbtPlugin := true
 scalacOptions := Seq("-deprecation", "-unchecked")
 
 publishArtifact in(Test, packageBin) := false
+
 publishArtifact in(Test, packageDoc) := false
+
 publishArtifact in(Test, packageSrc) := false
 
 //publishMavenStyle := false
